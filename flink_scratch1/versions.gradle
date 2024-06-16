@@ -1,0 +1,4 @@
+ext {
+    flinkVersion="1.19.0"
+    commonsCodecVersion="1.17.0"
+}
