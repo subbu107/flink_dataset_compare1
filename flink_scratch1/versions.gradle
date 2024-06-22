@@ -1,4 +1,5 @@
 ext {
     flinkVersion="1.19.0"
+    flinkKafkaVersion="3.2.0-1.19"
     commonsCodecVersion="1.17.0"
 }
