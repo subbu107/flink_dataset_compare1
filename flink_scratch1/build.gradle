@@ -25,20 +25,21 @@ tasks.withType(JavaCompile) {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.informatica.datavalidation.StreamCompare2'
+        attributes 'Main-Class': 'com.informatica.datavalidation.GenerateDetailedReport'
     }
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
 dependencies {
-    compile group: 'org.apache.flink', name: 'flink-java', version:"$flinkVersion"
-    compile group: 'org.apache.flink', name: 'flink-streaming-java', version:"$flinkVersion"
-    compile group: 'org.apache.flink', name: 'flink-table-api-java', version: "$flinkVersion"
-    compile group: 'org.apache.flink', name: 'flink-connector-kafka', version: "$flinkKafkaVersion"
-    compile group: 'org.apache.flink', name: 'flink-json', version: "$flinkVersion"
-    compile group: 'commons-codec', name : 'commons-codec', version : "$commonsCodecVersion"
+    implementation group: 'org.apache.flink', name: 'flink-java', version:"$flinkVersion"
+    implementation group: 'org.apache.flink', name: 'flink-streaming-java', version:"$flinkVersion"
+    implementation group: 'org.apache.flink', name: 'flink-table-api-java', version: "$flinkVersion"
+    implementation group: 'org.apache.flink', name: 'flink-connector-kafka', version: "$flinkKafkaVersion"
+    implementation group: 'org.apache.flink', name: 'flink-json', version: "$flinkVersion"
+    implementation group: 'commons-codec', name : 'commons-codec', version : "$commonsCodecVersion"
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.11.0'
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
