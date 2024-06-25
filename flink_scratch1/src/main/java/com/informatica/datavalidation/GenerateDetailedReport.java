@@ -2,8 +2,6 @@ package com.informatica.datavalidation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.informatica.datavalidation.filter.MismatchFilter;
 import com.informatica.datavalidation.pojo.Hashed;
 import com.informatica.datavalidation.util.Utils;
@@ -18,24 +16,19 @@ import org.apache.flink.api.common.time.Time;
 
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.api.java.utils.MultipleParameterTool;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
-import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
-import org.apache.flink.util.CloseableIterable;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+
 
 public class GenerateDetailedReport {
 
@@ -80,8 +73,6 @@ public class GenerateDetailedReport {
 
 
         DataStreamSource<JsonNode> source1 = env.fromSource(kafkaTopic1, WatermarkStrategy.noWatermarks(), "source1");
-
-        System.out.println("Received source1 sysout");
 
         List<Hashed> hashedList = getHashedData();
 
@@ -160,8 +151,15 @@ public class GenerateDetailedReport {
                     String leftMismatchField = leftFields.get(0);
                     String rightMismatchField = rightFields.get(0);
 
-                    reportTuple.setField(StringUtils.join(leftKeyFields, "|"), 0);
-                    reportTuple.setField(StringUtils.join(rightKeyFields, "|"), 1);
+                    String leftKeyVal = leftKeyFields.stream()
+                            .map( k -> left.get(k).asText())
+                            .collect(Collectors.joining("|"));
+                    String rightKeyVal = rightKeyFields.stream()
+                            .map( k -> right.get(k).asText())
+                            .collect(Collectors.joining("|"));
+
+                    reportTuple.setField(leftKeyVal, 0);
+                    reportTuple.setField(rightKeyVal, 1);
                     reportTuple.setField(leftMismatchField, 2);
                     reportTuple.setField(left.get(leftMismatchField), 3);
                     reportTuple.setField(rightMismatchField, 4);
