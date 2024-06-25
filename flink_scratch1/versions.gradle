@@ -2,4 +2,6 @@ ext {
     flinkVersion="1.19.0"
     flinkKafkaVersion="3.2.0-1.19"
     commonsCodecVersion="1.17.0"
+    mysqlConnectorVersion="8.0.33"
+    lombokVersion="1.18.32"
 }

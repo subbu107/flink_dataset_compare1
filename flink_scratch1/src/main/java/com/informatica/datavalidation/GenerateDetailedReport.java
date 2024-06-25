@@ -2,7 +2,6 @@ package com.informatica.datavalidation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.informatica.datavalidation.filter.MismatchFilter;
 import com.informatica.datavalidation.pojo.Hashed;
 import com.informatica.datavalidation.util.Utils;
 
@@ -23,6 +22,7 @@ import org.apache.flink.api.java.utils.MultipleParameterTool;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -83,8 +84,7 @@ public class GenerateDetailedReport {
         /*SingleOutputStreamOperator<Tuple2<JsonNode, String>> hashedSrc1 = source1.filter(new MismatchFilter(keysHashSet, keyFields))
                 .flatMap((x, y) -> y.collect(Tuple2.of(x, Utils.calculateKeyHash(keyFields, x)))); */
 
-        SingleOutputStreamOperator<Tuple2<JsonNode, String>> hashedSrc1 = source1
-                .flatMap(new FlatMapFunc1());
+
 
         KafkaSource<JsonNode> kafkaTopic2 = KafkaSource.<JsonNode>builder()
                 .setBootstrapServers("localhost:9095")
@@ -97,6 +97,9 @@ public class GenerateDetailedReport {
 
 //        SingleOutputStreamOperator<Tuple2<JsonNode, String>> hashedSrc2 = source2.filter(new MismatchFilter(keysHashSet, keyFields))
 //                .flatMap((x, y) -> y.collect(Tuple2.of(x, Utils.calculateKeyHash(keyFields, x))));
+
+        SingleOutputStreamOperator<Tuple2<JsonNode, String>> hashedSrc1 = source1
+                .flatMap(new FlatMapFunc1());
 
         SingleOutputStreamOperator<Tuple2<JsonNode, String>> hashedSrc2 = source2
                 .flatMap(new FlatMapFunc1());
@@ -116,6 +119,7 @@ public class GenerateDetailedReport {
         }
 
         JobExecutionResult result = env.execute("gen1");
+        System.out.println("The job took " + result.getNetRuntime(TimeUnit.SECONDS) + " to execute");
     }
 
     public static final class FlatMapFunc1 implements FlatMapFunction<JsonNode, Tuple2<JsonNode, String>>, ResultTypeQueryable {
